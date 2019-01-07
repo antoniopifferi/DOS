@@ -15,6 +15,7 @@ PathAnalysis='D:\\Beta\\Analysis\\Maybe\\'
 DirFigure='Figure\\'
 FileData='MAYm0000_ref01.txt'
 FileTrim='Trim.txt'
+FileLab='dcMAYm0000.txt'
 FileComponents='Components2.txt'
 PathFigure=PathAnalysis+DirFigure
 #dictCol={'Mus': 'newMus', 'Mua': 'newMua'}
@@ -27,8 +28,13 @@ ylim([0,0.5]), title('Components'), xlabel('wavelength (nm)'), ylabel('specific 
 savefig(PathFigure+'Components.jpg')
 show()
 
+# LOAD DICT
+with open(PathAnalysis+FileLab) as f:
+  dcLab = dict(x.rstrip().split(None, 1) for x in f)
+
 # LOAD DATA
 data=read_table(PathAnalysis+FileData)
+data.rename(columns=dcLab,inplace=True)
 Trim=read_table(PathAnalysis+FileTrim)
 data=merge(data,Trim)
 #data=data.rename(columns=dictCol)
