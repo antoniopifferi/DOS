@@ -17,6 +17,7 @@ FileData='MAYm0000_ref01.txt'
 FileTrim='Trim.txt'
 FileComponents='Components2.txt'
 PathFigure=PathAnalysis+DirFigure
+#dictCol={'Mus': 'newMus', 'Mua': 'newMua'}
 
 # LOAD COMPONENTS
 Components=read_table(PathAnalysis+FileComponents)
@@ -30,6 +31,7 @@ show()
 data=read_table(PathAnalysis+FileData)
 Trim=read_table(PathAnalysis+FileTrim)
 data=merge(data,Trim)
+#data=data.rename(columns=dictCol)
 
 # PLOT DATA
 for ip in data.Pos.unique():
