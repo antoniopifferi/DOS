@@ -16,12 +16,16 @@ DirFigure='Figure\\'
 FileData='MAYm0000_ref01.txt'
 FileTrim='Trim.txt'
 FileLab='dcMAYm0000.txt'
-FileComponents='Components2.txt'
+FileSet='LambdaSetEqui.txt'
+FileComponents='Components0.txt'
 PathFigure=PathAnalysis+DirFigure
+LabelLambdaSet=('L51','L27','L17','L13','L11')
 #dictCol={'Mus': 'newMus', 'Mua': 'newMua'}
 
 # LOAD COMPONENTS
 Components=read_table(PathAnalysis+FileComponents)
+LambdaSet=read_table(PathAnalysis+FileSet)
+LambdaSet=LambdaSet.fillna(-1).astype(np.int64)
 Components.plot(x='Lambda')
 yscale('log')
 ylim([0,0.5]), title('Components'), xlabel('wavelength (nm)'), ylabel('specific absorption (cm-1)')
@@ -39,10 +43,13 @@ Trim=read_table(PathAnalysis+FileTrim)
 data=merge(data,Trim)
 #data=data.rename(columns=dictCol)
 
+compAll=DataFrame()
 # PLOT DATA
 for ip in data.Pos.unique():
-    for ir in data.Rho.unique():
-        table=data[(data.Det==data.Trim)&(data.Pos==ip)].pivot_table(['Mua','Mus'],index='Lambda',columns=['Sample','Meas'],aggfunc='mean')
+    for il in LabelLambdaSet:
+#    for ir in data.Rho.unique():
+        iLambda=LambdaSet[il]
+        table=data[(data.Det==data.Trim)&(data.Pos==ip)&(data.Lambda.isin(iLambda))].pivot_table(['Mua','Mus'],index='Lambda',columns=['Pos','Sample','Rho','Meas'],aggfunc='mean')
         namefig='Mua_'+ip+'_'+str(ir)
         figure(namefig)
         plot(table.Mua)
@@ -60,8 +67,10 @@ for ip in data.Pos.unique():
         ylim([0,15.0]), legend(table.Mus), xlabel('wavelength (nm)'), ylabel('reduced scattering (cm-1)')
         savefig(PathFigure+namefig+'.jpg')
         show() 
-
-        comp=Components[Components['Lambda'].isin(data.Lambda.unique())].values
+        
+        table.to_csv(PathFigure+namefig+'S.csv')
+        
+        comp=Components[Components['Lambda'].isin(iLambda)].values
         comp=delete(comp,0,1)
         aComp=linalg.lstsq(comp[2:],table.Mua[2:],rcond=None)[0]
         dfComp=DataFrame(data=aComp.transpose(),
@@ -73,3 +82,11 @@ for ip in data.Pos.unique():
         print('SECTION ON '+ip+' - Rho='+str(ir))
         display(dfComp)
         dfComp.to_csv(PathFigure+namefig+'.csv')
+        dfComp['LambdaSet']=il
+        compAll=compAll.append(dfComp)
+        
+writer = ExcelWriter('reportAdd.xlsx')
+#compAll.to_excel(writer, 'Sheet1_{}_{}'.format(row_index, col_index))
+compAll.ffill(inplace=True)
+compAll.to_excel(writer)
+writer.save()
