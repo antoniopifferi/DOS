@@ -15,12 +15,16 @@ PathAnalysis='D:\\Beta\\Analysis\\Maybe\\'
 DirFigure='Figure\\'
 FileData='MAYm0000_ref01.txt'
 FileTrim='Trim.txt'
-FileLab='dcMAYm0000.txt'
-FileSet='LambdaSetEqui.txt'
+FileLab='keyMAYm0000.txt'
+FileSet='LambdaSetPaolaMod.txt'
 FileComponents='Components0.txt'
 PathFigure=PathAnalysis+DirFigure
 LabelLambdaSet=('L51','L27','L17','L13','L11')
 #dictCol={'Mus': 'newMus', 'Mua': 'newMua'}
+
+# SELECT KEYS
+Key1='Subject'
+Key2='Task'
 
 # LOAD COMPONENTS
 Components=read_table(PathAnalysis+FileComponents)
@@ -45,11 +49,12 @@ data=merge(data,Trim)
 
 compAll=DataFrame()
 # PLOT DATA
-for ip in data.Pos.unique():
+for ip in data.Task.unique():
     for il in LabelLambdaSet:
 #    for ir in data.Rho.unique():
+        ir=il #dangerous!!!!
         iLambda=LambdaSet[il]
-        table=data[(data.Det==data.Trim)&(data.Pos==ip)&(data.Lambda.isin(iLambda))].pivot_table(['Mua','Mus'],index='Lambda',columns=['Pos','Sample','Rho','Meas'],aggfunc='mean')
+        table=data[(data.Det==data.Trim)&(data.Task==ip)&(data.Lambda.isin(iLambda))].pivot_table(['Mua','Mus'],index='Lambda',columns=['Task','Subject','Rho','Meas'],aggfunc='mean')
         namefig='Mua_'+ip+'_'+str(ir)
         figure(namefig)
         plot(table.Mua)
