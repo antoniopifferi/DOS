@@ -15,11 +15,7 @@ PathAnalysis='D:\\Beta\\Analysis\\Maybe\\'
 DirFigure='Figure\\'
 FileData='MAYm0023.txt'
 FileTrim='trimMAYm0023.txt'
-<<<<<<< HEAD
 FileKey='keyMAYm0023.txt'
-=======
-FileLab='keyMAYm0023.txt'
->>>>>>> master
 FileComponents='Components2.txt'
 PathFigure=PathAnalysis+DirFigure
 #dictCol={'Mus': 'newMus', 'Mua': 'newMua'}
@@ -78,7 +74,9 @@ dfComp=DataFrame(data=aComp.transpose(),
                  index=table.Mua.columns)
 dfComp['tHb']=dfComp['HHb']+dfComp['O2Hb']
 dfComp['SO2']=dfComp['O2Hb']/dfComp['tHb']
+dfComp['Tot']=dfComp['Lipid']+dfComp['H2O']+dfComp['Collagen']
 dfComp = dfComp.applymap("{0:.2f}".format)
-print('SECTION ON '+ip+' - Rho='+str(ir))
+# print('SECTION ON '+ip+' - Rho='+str(ir))
 display(dfComp)
-dfComp.to_csv(PathFigure+namefig+'.csv')
+print(dfComp.to_string())
+# dfComp.to_csv(PathFigure+namefig+'.csv')
