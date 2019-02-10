@@ -13,9 +13,9 @@ close('all')
 # PARAMETERS
 PathAnalysis='D:\\Beta\\Analysis\\Maybe\\'
 DirFigure='Figure\\'
-FileData='MAYm0000_ref01.txt'
-FileTrim='Trim.txt'
-FileLab='keyMAYm0000.txt'
+FileData='MAYm0023.txt'
+FileTrim='trimMAYm0023.txt'
+FileLab='keyMAYm0023.txt'
 FileComponents='Components2.txt'
 PathFigure=PathAnalysis+DirFigure
 #dictCol={'Mus': 'newMus', 'Mua': 'newMua'}
