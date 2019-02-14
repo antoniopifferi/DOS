@@ -11,14 +11,14 @@ from pandas import *
 close('all')
 
 # OPTIONS
-PLOT_SINGLE=False
+PLOT_SINGLE=True
 PLOT_MULTI=False
 SHOW_TABLE=True
-PLOT_COMP=True
-#Task='Abdomen'
-Task='Muscle'
+PLOT_COMP=False
+Task='Abdomen'
+#Task='Muscle'
 Opt=['Mua','Mus']
-YLIM={'Mua':[0,0.7],'Mus':[0,20]}
+YLIM={'Mua':[0,0.5],'Mus':[0,20]}
 YLABEL={'Mua':'absorption (cm-1)','Mus':'reduced scattering (cm-1)'}
 
 # CONVERSION FUNCTION
@@ -43,7 +43,9 @@ else:
     FileKey='keyMAYm0024.txt'
     FIRST_LAMBDA=2
     
-FileComponents='Components2.txt'
+#FileComponents='Components2.txt'
+#FileComponents='ComponentsNoColl.txt'
+FileComponents='ComponentsNoBkg.txt'
 PathFigure=PathAnalysis+DirFigure
 
 # LOAD COMPONENTS
@@ -69,13 +71,17 @@ filtData=rawData[(rawData.Det==rawData.Trim)&(rawData.Accept=='OK')]
 if PLOT_SINGLE:
     for iss in filtData.Subject.unique():
         for im in filtData.Meas.unique():
+            age=filtData[(filtData.Subject==iss)&(filtData.Meas==im)].Age.unique()
+            thick=filtData[(filtData.Subject==iss)&(filtData.Meas==im)].Thickness.unique()
+            bmi=filtData[(filtData.Subject==iss)&(filtData.Meas==im)].BMI.unique()
             fig=figure(figsize=cm2inch(40, 15))
             table=filtData[(filtData.Subject==iss)&(filtData.Meas==im)].pivot_table(Opt,index='Lambda',columns=['Rho'],aggfunc='mean')
             for io in Opt:
                 fig.add_subplot(1,2,1+Opt.index(io))
                 plot(table[io])
                 ylim(YLIM[io]), legend(table[io]), xlabel('wavelength (nm)'), ylabel(YLABEL[io])
-                title('Subject #'+str(iss)+' - Meas='+str(im))
+                #title('Subject #'+str(iss)+' - Meas='+str(im))
+                title('#'+str(iss)+'-Age='+str(age)+'-BMI='+str(bmi)+'-Thk='+str(thick)+'-Meas='+str(im))
                 grid(True)
     show()
 
@@ -85,16 +91,21 @@ if PLOT_MULTI:
             fig=figure(figsize=cm2inch(40, 15))
             Rho=list(filtData.Rho.unique())
             for ir in Rho:
+                age=filtData[(filtData.Subject==iss)&(filtData.Rho==ir)].Age.unique()
+#                thick=0.2*sum(filtData[(filtData.Subject==iss)&(filtData.Rho==ir)].Thickness.unique())
+                bmi=filtData[(filtData.Subject==iss)&(filtData.Rho==ir)].BMI.unique()
                 table=filtData[(filtData.Subject==iss)&(filtData.Rho==ir)].pivot_table(Opt,index='Lambda',columns=['Meas'],aggfunc='mean')
                 fig.add_subplot(1,len(Rho),1+Rho.index(ir))
                 plot(table[io])
                 ylim(YLIM[io]), legend(table[io]), xlabel('wavelength (nm)'), ylabel(YLABEL[io])
-                title('Subject #'+str(iss)+' - Rho='+str(ir))
+                #title('#'+str(iss)+'-Age='+str(age)+'-BMI='+str(bmi)+'-Thk='+str(thick)+' - Rho='+str(ir))
+                title('#'+str(iss)+'-Age='+str(age)+'-BMI='+str(bmi)+' - Rho='+str(ir))
                 grid(True)
     show()
 
 
-table=filtData.pivot_table(Opt,index='Lambda',columns=['Subject','Rho','Meas'],aggfunc='mean')
+table=filtData.pivot_table(Opt,index='Lambda',columns=['Subject','Rho'],aggfunc='mean')
+#table=filtData.pivot_table(Opt,index='Lambda',columns=['Subject','Rho','Meas'],aggfunc='mean')
 comp=Components[Components['Lambda'].isin(filtData.Lambda.unique())].values
 comp=delete(comp,0,1)
 aComp=linalg.lstsq(comp[FIRST_LAMBDA:],table.Mua[FIRST_LAMBDA:],rcond=None)[0]
@@ -102,10 +113,16 @@ dfComp=DataFrame(data=aComp.transpose(),columns=Components.columns[1:],index=tab
 dfComp['tHb']=dfComp['HHb']+dfComp['O2Hb']
 dfComp['SO2']=dfComp['O2Hb']/dfComp['tHb']
 dfComp['Tot']=dfComp['Lipid']+dfComp['H2O']+dfComp['Coll']
+#dfComp['Tot']=dfComp['Lipid']+dfComp['H2O']
 
 pandas.options.display.max_columns = None
 pandas.options.display.max_rows = None
 pandas.options.display.max_colwidth = 10
 pandas.options.display.width = None
 pandas.options.display.precision = 2
+#with pandas.option_context('display.multi_sparse', False):
 display(dfComp)
+dfComp = dfComp.reset_index()
+dfComp.to_csv(PathAnalysis+'dfComp.csv', index=False)
+
+#dfComp.T.plot(subplots=True,layout=[10,40],figsize=[20,10])
